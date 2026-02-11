@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID
 
@@ -10,8 +10,6 @@ ALLOWED_EVENT_TYPES: set[str] = {"signup", "page_view", "purchase", "error"}
 
 
 class Event(BaseModel):
-    
-
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     event_id: UUID
@@ -39,7 +37,7 @@ class Event(BaseModel):
 
         # Disallow far-future timestamps (clock skew / bad clients)
         now = datetime.now(UTC)
-        if value > now.replace(year=now.year + 1):
+        if value > now + timedelta(days=366):
             raise ValueError("timestamp is too far in the future")
         return value
 
