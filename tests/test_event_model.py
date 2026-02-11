@@ -34,7 +34,7 @@ def test_event_rejects_unknown_fields() -> None:
 
 
 def test_event_rejects_invalid_type() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValidationError):
         Event(
             event_id=uuid4(),
             type="login",
@@ -45,7 +45,7 @@ def test_event_rejects_invalid_type() -> None:
 
 
 def test_event_requires_timezone_aware_timestamp() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValidationError):
         Event(
             event_id=uuid4(),
             type="signup",
@@ -57,7 +57,7 @@ def test_event_requires_timezone_aware_timestamp() -> None:
 
 def test_event_rejects_properties_too_large() -> None:
     too_many = {f"k{i}": i for i in range(51)}
-    with pytest.raises(ValueError):
+    with pytest.raises(ValidationError):
         Event(
             event_id=uuid4(),
             type="signup",
