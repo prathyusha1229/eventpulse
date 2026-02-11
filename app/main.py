@@ -8,4 +8,6 @@ app = FastAPI(
     description="Event ingestion + analytics backend (no SQL).",
 )
 
-app.include_router(health_router)
+app.include_router(health_router) 
+
+#fskgb
