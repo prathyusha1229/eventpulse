@@ -10,12 +10,7 @@ from app.models.event import Event
 from app.storage.raw_event_store import RawEventStore
 
 
-class IngestionResult(Event.model_config.__class__):  # type: ignore[misc]
-    pass
-
-
 def parse_event(payload: dict[str, Any]) -> Event:
-    # All validation is centralized here
     return Event.model_validate(payload)
 
 
@@ -37,7 +32,6 @@ class IngestionService:
             try:
                 event = parse_event(payload)
 
-                # Basic dedupe inside the batch (same event_id repeated)
                 if event.event_id in seen_ids:
                     rejected.append(
                         {
@@ -51,10 +45,8 @@ class IngestionService:
                 seen_ids.add(event.event_id)
                 self._store.append(event)
                 accepted.append(event)
+
             except ValidationError as e:
                 rejected.append({"index": idx, "reason": "validation_error", "details": e.errors()})
 
-        return {
-            "accepted": len(accepted),
-            "rejected": rejected,
-        }
+        return {"accepted": len(accepted), "rejected": rejected}
