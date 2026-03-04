@@ -10,33 +10,29 @@ from app.models.event import Event
 from app.storage.raw_event_store import RawEventStore
 
 
-def parse_event(payload: dict[str, Any]) -> Event:
-    return Event.model_validate(payload)
-
-
 class IngestionService:
     def __init__(self, store: RawEventStore) -> None:
         self._store = store
 
-    def ingest_one(self, payload: dict[str, Any]) -> Event:
-        event = parse_event(payload)
+    def ingest_one(self, event: Event) -> Event:
         self._store.append(event)
         return event
 
-    def ingest_batch(self, payloads: Iterable[dict[str, Any]]) -> dict[str, Any]:
-        accepted: list[Event] = []
+    def ingest_batch(self, payloads: Iterable[dict[str, Any]]) -> tuple[int, list[dict[str, Any]]]:
+        accepted_count = 0
         rejected: list[dict[str, Any]] = []
         seen_ids: set[UUID] = set()
 
         for idx, payload in enumerate(payloads):
             try:
-                event = parse_event(payload)
+                event = Event.model_validate(payload)
 
                 if event.event_id in seen_ids:
                     rejected.append(
                         {
                             "index": idx,
-                            "reason": "duplicate event_id in batch",
+                            "code": "duplicate_in_batch",
+                            "message": "duplicate event_id in batch",
                             "event_id": str(event.event_id),
                         }
                     )
@@ -44,9 +40,16 @@ class IngestionService:
 
                 seen_ids.add(event.event_id)
                 self._store.append(event)
-                accepted.append(event)
+                accepted_count += 1
 
             except ValidationError as e:
-                rejected.append({"index": idx, "reason": "validation_error", "details": e.errors()})
+                rejected.append(
+                    {
+                        "index": idx,
+                        "code": "validation_error",
+                        "message": "event validation failed",
+                        "details": e.errors(),
+                    }
+                )
 
-        return {"accepted": len(accepted), "rejected": rejected}
+        return accepted_count, rejected
