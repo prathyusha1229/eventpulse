@@ -2,7 +2,7 @@
 
 A self-hosted behavioral analytics platform built to understand data pipelines end-to-end. Tracks user events (page views, clicks, errors, purchases), processes them through a three-stage pipeline, and serves a live dashboard.
 
-> **Interview talking point:** EventPulse demonstrates the full journey from raw event ingestion to pre-aggregated analytics — the same pattern used in production systems like Segment, Mixpanel, or Amplitude, but built from first principles without a database.
+ EventPulse demonstrates the full journey from raw event ingestion to pre-aggregated analytics — the same pattern used in production systems like Segment, Mixpanel, or Amplitude, but built from first principles without a database.
 
 ---
 
